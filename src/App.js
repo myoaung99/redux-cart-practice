@@ -4,9 +4,7 @@ import Layout from "./components/Layout/Layout";
 import Products from "./components/Shop/Products";
 import { useSelector, useDispatch } from "react-redux";
 import Notification from "./components/UI/Notification";
-import { uiActions } from "./store/ui-slice";
-
-let isInitial = true;
+import { fetchCartData, sendCartData } from "./store/cart-actions";
 
 function App() {
   const showCart = useSelector((state) => state.ui.cartIsVisiable);
@@ -18,54 +16,17 @@ function App() {
   // ပြောင်းတာ ဘာလို့သိလဲဆို useSelector က redux store ကို auto subscription လုပ်ပေးလို့
   const cart = useSelector((state) => state.cart);
 
+  // side effect code တွေကို redux နဲ့ တွဲသုံးတာပါ
+  useEffect(() => {
+    dispatch(fetchCartData());
+  }, [dispatch]);
+
   // useEffect ထဲက ကောင်တွေ အလုပ်လုပ်မယ်
   useEffect(() => {
-    const sendHTTP = async () => {
-      // pending state
-      dispatch(
-        uiActions.showNotification({
-          status: "pending...",
-          title: "Sending...",
-          message: "Sending cart items....",
-        })
-      );
-      const response = await fetch(
-        "https://react-5826f-default-rtdb.firebaseio.com/cart.json",
-        {
-          method: "PUT",
-          body: JSON.stringify(cart),
-        }
-      );
-
-      // error state
-      if (!response.ok) {
-        throw new Error("Error");
-      }
-
-      // success state
-      dispatch(
-        uiActions.showNotification({
-          status: "success",
-          title: "Success!",
-          message: "Sent cart items successfullu!",
-        })
-      );
-    };
-
-    if (isInitial) {
-      isInitial = false;
-      return;
+    if (cart.changed) {
+      // dispatch action from redux
+      dispatch(sendCartData(cart));
     }
-
-    sendHTTP().catch((error) => {
-      dispatch(
-        uiActions.showNotification({
-          status: "error",
-          title: "Error",
-          message: "Sending cart items failed!",
-        })
-      );
-    });
   }, [cart, dispatch]);
 
   return (

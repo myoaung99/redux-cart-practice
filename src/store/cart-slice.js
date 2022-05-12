@@ -6,11 +6,17 @@ const cartSlice = createSlice({
     // item info တွေကို obj အဖြစ်နဲ့ လက်ခံပါမယ်
     items: [],
     totalQuantity: 0,
-    totalAmount: 0,
+    changed: false,
   },
   reducers: {
+    replaceCart(state, action) {
+      state.items = action.payload.items;
+      state.totalQuantity = action.payload.totalQuantity;
+    },
     addItemToCart(state, action) {
       const newItem = action.payload;
+
+      state.changed = true;
 
       // action payload ကနေဝင်လာတဲ့ item id ဟာ state ထဲက item id နဲ့ တူနေလား? တနည်း ရှိနေလား စစ်တာပါ
       const existingItem = state.items.find((item) => item.id === newItem.id);
@@ -37,9 +43,12 @@ const cartSlice = createSlice({
     },
     removeItemFromCart(state, action) {
       const id = action.payload;
+
+      state.changed = true;
       const existingItem = state.items.find((item) => item.id === id);
 
       if (existingItem.quantity === 1) {
+        // quantity က တခုတည်းဆို array ထဲက ထုတ်
         state.items = state.items.filter((item) => item.id !== id);
       } else {
         existingItem.quantity--;
